@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
-import openai
 import json
+from openai import OpenAI
 
 # --- CONFIG ---
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 st.title("🧠 AI Attribute Discovery Tool")
 st.write("Upload a CSV file containing existing product attributes. This tool will analyze the data and suggest a rich set of standard attribute headers that can be used to guide LLM enrichment.")
@@ -38,14 +38,14 @@ Sample Rows:
 Suggested Attribute Headers:
 """
 
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4o",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3
     )
 
-    output = response["choices"][0]["message"]["content"]
-    
+    output = response.choices[0].message.content
+
     st.subheader("💡 Suggested Rich Attribute Headers")
     st.code(output, language="json")
 
@@ -78,13 +78,13 @@ Populate as many of the following enriched attributes as possible:
 Return the result as a JSON object.
 """
 
-            enrich_response = openai.ChatCompletion.create(
+            enrich_response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": enrichment_prompt}],
                 temperature=0.3
             )
 
-            result = enrich_response["choices"][0]["message"]["content"]
+            result = enrich_response.choices[0].message.content
             try:
                 enriched_row = json.loads(result)
                 enriched_rows.append(enriched_row)
